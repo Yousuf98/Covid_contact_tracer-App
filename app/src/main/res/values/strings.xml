@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Covid Contact Tracer</string>
+    <string name="loginBtn">LOGIN</string>
+    <string name="frgPassTxt">Forgot Password?</string>
+    <string name="RgstTxt">Register</string>
+    <string name="StatTxt">Covid Status:</string>
+    <string name="StatRBtnNve">Negative</string>
+    <string name="StatRBtnPve">Positive</string>
+    <string name="RegBtn">REGISTER</string>
+</resources>

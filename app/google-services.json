@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "17148819540",
+    "firebase_url": "https://contact-tracer-71ef8.firebaseio.com",
+    "project_id": "contact-tracer-71ef8",
+    "storage_bucket": "contact-tracer-71ef8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:17148819540:android:cc9328706679b4ee9a15c1",
+        "android_client_info": {
+          "package_name": "com.mobapps.covidcontacttracer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "17148819540-kt2651c87i1hg7umgtvnbi3vkjakvoak.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCGiAPNqui9YX7NwriYrj8UigchB_l7PBk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "17148819540-kt2651c87i1hg7umgtvnbi3vkjakvoak.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
