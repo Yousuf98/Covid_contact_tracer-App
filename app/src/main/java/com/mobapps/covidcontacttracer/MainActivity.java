@@ -16,6 +16,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class MainActivity extends AppCompatActivity {
     private EditText editTextTextEmailAddress, editTextTextPassword;
@@ -26,6 +27,16 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Checking if the user is already logged in
+        FirebaseUser user=FirebaseAuth.getInstance().getCurrentUser();
+        if (user!=null)
+        {
+            Intent i=new Intent(getApplicationContext(),ProfileActivity.class);
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(i);
+        }
+
         setContentView(R.layout.activity_main);
 
         editTextTextEmailAddress = (EditText) findViewById(R.id.editTextTextEmailAddress);
@@ -35,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
     }
 
-    public void registerActivity(android.view.View v) {
+    public void registerActivity(android.view.View v) { //  Takes the user to the registration page
         Intent reg = new Intent(this, RegisterUser.class);
         startActivity(reg);
     }

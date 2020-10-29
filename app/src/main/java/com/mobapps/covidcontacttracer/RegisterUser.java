@@ -3,12 +3,17 @@ package com.mobapps.covidcontacttracer;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -19,7 +24,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.FirebaseDatabase;
 
-public class RegisterUser extends AppCompatActivity {
+public class RegisterUser extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener {
 
     private FirebaseAuth mAuth;
     private EditText editTextTextPersonName;
@@ -28,10 +33,26 @@ public class RegisterUser extends AppCompatActivity {
     private EditText editTextAge;
     private EditText editTextPhone;
     private ProgressBar progressBarReg;
+    private EditText editTextResidenceCity;
+    private Spinner GenderSpinner;
+    private RadioGroup StatusRadioGroup;
+    private RadioButton radioButtonNve;
+    private RadioButton radioButtonPve;
+    private String Status=" ";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Checking if the user is already logged in
+        FirebaseUser user=FirebaseAuth.getInstance().getCurrentUser();
+        if (user!=null)
+        {
+            Intent i=new Intent(getApplicationContext(),ProfileActivity.class);
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(i);
+        }
+
         setContentView(R.layout.activity_register_user);
 
         // Initialize Firebase Auth
@@ -43,6 +64,18 @@ public class RegisterUser extends AppCompatActivity {
         editTextAge = (EditText) findViewById(R.id.editTextAge);
         editTextPhone = (EditText) findViewById(R.id.editTextPhone);
         progressBarReg = (ProgressBar) findViewById(R.id.progressBarReg);
+        editTextResidenceCity=(EditText) findViewById( R.id.editTextResidenceCity );
+        GenderSpinner=(Spinner) findViewById( R.id.GenderSpinner );
+        StatusRadioGroup=(RadioGroup ) findViewById( R.id.StatusRadioGroup );
+        radioButtonNve=(RadioButton) findViewById( R.id.radioButtonNve );
+        radioButtonPve=(RadioButton) findViewById( R.id.radioButtonPve );
+        radioButtonNve.setChecked( true );
+        //Setting the spinner to M/F Option:
+        ArrayAdapter<CharSequence> adapter=ArrayAdapter.createFromResource( this,R.array.gender,android.R.layout.simple_spinner_dropdown_item );
+        GenderSpinner.setAdapter( adapter );
+
+        //Setting Radio Button Listener:
+        StatusRadioGroup.setOnCheckedChangeListener( this );
     }
 
     public void registerUser(android.view.View v) {
@@ -51,6 +84,8 @@ public class RegisterUser extends AppCompatActivity {
         String pass = editTextTextPassword2.getText().toString().trim();
         final String age = editTextAge.getText().toString().trim();
         final String phone = editTextPhone.getText().toString().trim();
+        final String city_of_residence=editTextResidenceCity.getText().toString().trim();
+        final String gender=(String)GenderSpinner.getSelectedItem();
 
         if (name.isEmpty()) {
             editTextTextPersonName.setError("Full name is required!");
@@ -87,8 +122,15 @@ public class RegisterUser extends AppCompatActivity {
             editTextTextPassword2.requestFocus();
             return;
         }
+
+        if(city_of_residence.isEmpty())
+        {
+            editTextResidenceCity.setText( "The City of Residence is required!" );
+            editTextResidenceCity.requestFocus();
+        }
+
         progressBarReg.setVisibility(View.VISIBLE);
-        mAuth.createUserWithEmailAndPassword(email, pass)
+        mAuth.createUserWithEmailAndPassword(email, pass) // Creating a new user using this function
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
@@ -96,7 +138,7 @@ public class RegisterUser extends AppCompatActivity {
                             FirebaseUser AddedUser = FirebaseAuth.getInstance().getCurrentUser();
                             UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder().setDisplayName(name).build();
                             AddedUser.updateProfile(profileUpdates);
-                            User user = new User(name, email, age, phone);
+                            User user = new User(name, email, age, phone,city_of_residence,gender,Status); // Creating a new user object
                             FirebaseDatabase.getInstance().getReference("Users")
                                     .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                                     .setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -104,11 +146,11 @@ public class RegisterUser extends AppCompatActivity {
                                 public void onComplete(@NonNull Task<Void> task) {
                                     if (task.isSuccessful()) {
                                         Toast.makeText(RegisterUser.this, "User has been registered successfully!", Toast.LENGTH_LONG).show();
-                                        progressBarReg.setVisibility(View.GONE);
                                     } else {
                                         Toast.makeText(RegisterUser.this, "Failed to register. Try again!", Toast.LENGTH_LONG).show();
-                                        progressBarReg.setVisibility(View.GONE);
                                     }
+                                    progressBarReg.setVisibility(View.GONE);
+                                    sendEmailVerification();
                                 }
                             });
                         } else {
@@ -120,4 +162,34 @@ public class RegisterUser extends AppCompatActivity {
                 });
     }
 
+    public void sendEmailVerification() {
+        FirebaseAuth auth = FirebaseAuth.getInstance(); // Sending Email Verification to the User
+        FirebaseUser user = auth.getCurrentUser();
+
+        user.sendEmailVerification()
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Log.d("debuggg", "Email has been sent to the user");
+                        }
+                        else
+                        {
+                            Log.d( "debuggg", "The email was not sent succesfully" );
+                        }
+                    }
+                });
+    }
+
+    @Override
+    public void onCheckedChanged(RadioGroup radioGroup, int i) {
+        switch(i){
+            case R.id.radioButtonPve:
+                Status="Positive";
+                break;
+            case R.id.radioButtonNve:
+                Status="Negative";
+                break;
+        }
+    }
 }

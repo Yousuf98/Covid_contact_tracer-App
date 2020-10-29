@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/view_map"
+        android:icon="@android:drawable/ic_dialog_map"
+        android:title="View Map " />
+    <item
+        android:id="@+id/update_password"
+        android:icon="@android:drawable/ic_secure"
+        android:title="Update Password" />
+    <item
+        android:id="@+id/sign_out"
+        android:title="Sign Out" />
+</menu>

@@ -7,4 +7,10 @@
     <string name="StatRBtnNve">Negative</string>
     <string name="StatRBtnPve">Positive</string>
     <string name="RegBtn">REGISTER</string>
+
+
+    <string-array name="gender">
+        <item>Male</item>
+        <item>Female</item>
+    </string-array>
 </resources>
