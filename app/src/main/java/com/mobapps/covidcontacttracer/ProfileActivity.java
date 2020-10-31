@@ -25,13 +25,13 @@ import com.google.firebase.database.ValueEventListener;
 Purpose of this file:
 - This displays the main welcome page for the logged in user
  */
-
+//Added One Line of Code..
 public class ProfileActivity extends AppCompatActivity implements View.OnClickListener {
     private TextView WelcomeText;
     private TextView statusTextView;
     private Button updateStatusButton;
     private String ExtractedStatus;
-    private boolean PositiveOrNegative; // True if Positive
+    private boolean PositiveOrNegative; // Stores whether the user is +ve or -ve in Boolean Format
     FirebaseAuth auth;
     @SuppressLint("SetTextI18n")
     @Override
@@ -127,7 +127,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 
     private void UpdateUi()
     {
-        if(PositiveOrNegative)// If Positive
+        if(PositiveOrNegative)
         {
             updateStatusButton.setText( "UPDATE STATUS TO POSITIVE" );
             statusTextView.setText( "NEGATIVE" );
