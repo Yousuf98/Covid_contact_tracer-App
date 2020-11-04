@@ -71,7 +71,9 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                 FirebaseAuth.getInstance().signOut();
                 Toast.makeText( this, "User signed out successfully!", Toast.LENGTH_SHORT ).show();
                 Intent intent=new Intent(getApplicationContext(),MainActivity.class);
-                startActivity( intent );
+                startActivity(intent);
+                Intent serviceIntent = new Intent(getApplicationContext(), MyService.class);
+                stopService(serviceIntent);
 
         }
         return super.onOptionsItemSelected( item );
