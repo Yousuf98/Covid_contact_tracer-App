@@ -100,6 +100,7 @@ public class MainActivity extends AppCompatActivity {
                     ContextCompat.startForegroundService(getApplicationContext(), serviceIntent);
                     startActivity(new Intent(MainActivity.this, ProfileActivity.class));
                     progressBarLogin.setVisibility(View.GONE);
+                    finish();
                 } else {
                     Toast.makeText(MainActivity.this, "Failed to login! Please check your credentials", Toast.LENGTH_LONG).show();
                     progressBarLogin.setVisibility(View.GONE);

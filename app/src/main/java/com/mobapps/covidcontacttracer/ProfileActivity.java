@@ -74,7 +74,10 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                 startActivity(intent);
                 Intent serviceIntent = new Intent(getApplicationContext(), MyService.class);
                 stopService(serviceIntent);
-
+                break;
+            case R.id.view_map:
+                intent=new Intent(getApplicationContext(),MapsActivity.class);
+                startActivity(intent);
         }
         return super.onOptionsItemSelected( item );
     }
