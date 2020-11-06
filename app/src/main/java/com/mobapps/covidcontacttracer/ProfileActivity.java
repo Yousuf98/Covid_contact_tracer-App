@@ -20,6 +20,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 /*
 Purpose of this file:
@@ -32,7 +33,9 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     private Button updateStatusButton;
     private String ExtractedStatus;
     private boolean PositiveOrNegative; // Stores whether the user is +ve or -ve in Boolean Format
-    FirebaseAuth auth;
+    private FirebaseAuth auth;
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+
     @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,12 +96,18 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                     FirebaseDatabase.getInstance().getReference("Users").child(auth.getCurrentUser().getUid()).child( "Status" )
                             .setValue( "Negative" );
                     Toast.makeText( this, "Status Updated to : Negative", Toast.LENGTH_SHORT ).show();
+
+                    //Code to update user status on firestore
+                    db.collection("users").document(auth.getCurrentUser().getUid()).update("Status","Negative");
                 }
                 else
                 {
                     FirebaseDatabase.getInstance().getReference("Users").child(auth.getCurrentUser().getUid()).child( "Status" )
                             .setValue( "Positive" );
                     Toast.makeText( this, "Status Updated to : Positive", Toast.LENGTH_SHORT ).show();
+
+                    //Code to update user status on firestore
+                    db.collection("users").document(auth.getCurrentUser().getUid()).update("Status","Positive");
                 }
                 CheckAndUpdateStatus();
                 UpdateUi();
@@ -128,6 +137,9 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                     // No Code.
             }
         } );
+
+
+
     }
 
     private void UpdateUi()

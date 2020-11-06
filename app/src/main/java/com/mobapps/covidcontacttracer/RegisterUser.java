@@ -17,16 +17,24 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class RegisterUser extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener {
 
     private FirebaseAuth mAuth;
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private EditText editTextTextPersonName;
     private EditText editTextTextEmailAddress2;
     private EditText editTextTextPassword2;
@@ -38,17 +46,16 @@ public class RegisterUser extends AppCompatActivity implements RadioGroup.OnChec
     private RadioGroup StatusRadioGroup;
     private RadioButton radioButtonNve;
     private RadioButton radioButtonPve;
-    private String Status=" ";
+    private String Status = " ";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         // Checking if the user is already logged in
-        FirebaseUser user=FirebaseAuth.getInstance().getCurrentUser();
-        if (user!=null)
-        {
-            Intent i=new Intent(getApplicationContext(),ProfileActivity.class);
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            Intent i = new Intent(getApplicationContext(), ProfileActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(i);
         }
@@ -64,18 +71,18 @@ public class RegisterUser extends AppCompatActivity implements RadioGroup.OnChec
         editTextAge = (EditText) findViewById(R.id.editTextAge);
         editTextPhone = (EditText) findViewById(R.id.editTextPhone);
         progressBarReg = (ProgressBar) findViewById(R.id.progressBarReg);
-        editTextResidenceCity=(EditText) findViewById( R.id.editTextResidenceCity );
-        GenderSpinner=(Spinner) findViewById( R.id.GenderSpinner );
-        StatusRadioGroup=(RadioGroup ) findViewById( R.id.StatusRadioGroup );
-        radioButtonNve=(RadioButton) findViewById( R.id.radioButtonNve );
-        radioButtonPve=(RadioButton) findViewById( R.id.radioButtonPve );
-        radioButtonNve.setChecked( true );
+        editTextResidenceCity = (EditText) findViewById(R.id.editTextResidenceCity);
+        GenderSpinner = (Spinner) findViewById(R.id.GenderSpinner);
+        StatusRadioGroup = (RadioGroup) findViewById(R.id.StatusRadioGroup);
+        radioButtonNve = (RadioButton) findViewById(R.id.radioButtonNve);
+        radioButtonPve = (RadioButton) findViewById(R.id.radioButtonPve);
+        radioButtonNve.setChecked(true);
         //Setting the spinner to M/F Option:
-        ArrayAdapter<CharSequence> adapter=ArrayAdapter.createFromResource( this,R.array.gender,android.R.layout.simple_spinner_dropdown_item );
-        GenderSpinner.setAdapter( adapter );
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.gender, android.R.layout.simple_spinner_dropdown_item);
+        GenderSpinner.setAdapter(adapter);
 
         //Setting Radio Button Listener:
-        StatusRadioGroup.setOnCheckedChangeListener( this );
+        StatusRadioGroup.setOnCheckedChangeListener(this);
     }
 
     public void registerUser(android.view.View v) {
@@ -84,8 +91,15 @@ public class RegisterUser extends AppCompatActivity implements RadioGroup.OnChec
         String pass = editTextTextPassword2.getText().toString().trim();
         final String age = editTextAge.getText().toString().trim();
         final String phone = editTextPhone.getText().toString().trim();
-        final String city_of_residence=editTextResidenceCity.getText().toString().trim();
-        final String gender=(String)GenderSpinner.getSelectedItem();
+        final String city_of_residence = editTextResidenceCity.getText().toString().trim();
+        final String gender = (String) GenderSpinner.getSelectedItem();
+
+        //Get status
+        int selectedId = StatusRadioGroup.getCheckedRadioButtonId();
+
+        // find the radiobutton by returned id
+        RadioButton radioButton = (RadioButton) findViewById(selectedId);
+        Status = radioButton.getText().toString().trim();
 
         if (name.isEmpty()) {
             editTextTextPersonName.setError("Full name is required!");
@@ -123,9 +137,8 @@ public class RegisterUser extends AppCompatActivity implements RadioGroup.OnChec
             return;
         }
 
-        if(city_of_residence.isEmpty())
-        {
-            editTextResidenceCity.setText( "The City of Residence is required!" );
+        if (city_of_residence.isEmpty()) {
+            editTextResidenceCity.setText("The City of Residence is required!");
             editTextResidenceCity.requestFocus();
         }
 
@@ -134,11 +147,11 @@ public class RegisterUser extends AppCompatActivity implements RadioGroup.OnChec
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        if(task.isSuccessful()) {
+                        if (task.isSuccessful()) {
                             FirebaseUser AddedUser = FirebaseAuth.getInstance().getCurrentUser();
                             UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder().setDisplayName(name).build();
                             AddedUser.updateProfile(profileUpdates);
-                            User user = new User(name, email, age, phone,city_of_residence,gender,Status); // Creating a new user object
+                            User user = new User(name, email, age, phone, city_of_residence, gender, Status); // Creating a new user object
                             FirebaseDatabase.getInstance().getReference("Users")
                                     .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                                     .setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -153,6 +166,30 @@ public class RegisterUser extends AppCompatActivity implements RadioGroup.OnChec
                                     sendEmailVerification();
                                 }
                             });
+
+                            //Attempt to add user to cloud firestore
+                            // Create a new user with a first and last name
+                            /*Map<String, Object> user = new HashMap<>();
+                            user.put("first", "Ada");
+                            user.put("last", "Lovelace");
+                            user.put("born", 1815);*/
+                            // Add a new document with a generated ID
+                            db.collection("users")
+                                    .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                    .set(user)
+                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            Log.d("debuggg", "Document added to firestore successfully");
+                                        }
+                                    })
+                                    .addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            Log.d("debuggg", "Error adding document", e);
+                                        }
+                                    });
+
                         } else {
                             Log.d("debuggg", "This fail?");
                             Toast.makeText(RegisterUser.this, "Failed to register. Try again!", Toast.LENGTH_LONG).show();
@@ -172,10 +209,8 @@ public class RegisterUser extends AppCompatActivity implements RadioGroup.OnChec
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
                             Log.d("debuggg", "Email has been sent to the user");
-                        }
-                        else
-                        {
-                            Log.d( "debuggg", "The email was not sent succesfully" );
+                        } else {
+                            Log.d("debuggg", "The email was not sent succesfully");
                         }
                     }
                 });
@@ -183,12 +218,12 @@ public class RegisterUser extends AppCompatActivity implements RadioGroup.OnChec
 
     @Override
     public void onCheckedChanged(RadioGroup radioGroup, int i) {
-        switch(i){
+        switch (i) {
             case R.id.radioButtonPve:
-                Status="Positive";
+                Status = "Positive";
                 break;
             case R.id.radioButtonNve:
-                Status="Negative";
+                Status = "Negative";
                 break;
         }
     }

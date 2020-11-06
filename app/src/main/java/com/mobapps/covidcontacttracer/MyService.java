@@ -29,19 +29,26 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class MyService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private GoogleApiClient googleApiClient;
-    public static final int UPDATE_INTERVAL = 2000;   // 5 secs
-    public static final int FASTEST_UPDATE_INTERVAL = 500;
+    public static final int UPDATE_INTERVAL = 20000;   // 5 secs
+    public static final int FASTEST_UPDATE_INTERVAL = 10000;
     private LocationRequest locationRequest;
 
     private Timer timer;
     public static final String CHANNEL_ID = "ForegroundServiceChannel";
+
+    private FirebaseAuth auth;
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @Override
     public void onCreate() {
@@ -69,6 +76,7 @@ public class MyService extends Service implements GoogleApiClient.ConnectionCall
         //Must add the following persmission to manifest as well
         //<uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
         //
+        auth=FirebaseAuth.getInstance();
         generateNotification("");
 
         //TS: when the system will try to re-create the service
@@ -174,6 +182,10 @@ public class MyService extends Service implements GoogleApiClient.ConnectionCall
     public void onLocationChanged(@NonNull Location location) {
         Log.d("TS", "" + location.getLatitude() + "|" + location.getLongitude());
         generateNotification("" + location.getLatitude() + "|" + location.getLongitude());
+        Map<String, String> data = new HashMap<>();
+        data.put("Lattitude",location.getLatitude()+"");
+        data.put("Longitude",location.getLongitude()+"");
+        db.collection("LocationStamps").document(auth.getCurrentUser().getUid()).collection("UserLocations").add(data);
     }
 
     @Override
