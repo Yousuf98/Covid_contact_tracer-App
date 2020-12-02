@@ -58,6 +58,25 @@ public class MainActivity extends AppCompatActivity {
             Log.d("Thread", "checking permissions");
         }
 
+
+
+        /*
+        //ADDED - ZAID - CHECK -- Does the following retreive the current updated token?
+        com.google.firebase.messaging.FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener( new OnCompleteListener<String>() {
+                    @Override
+                    public void onComplete(@NonNull Task<String> task) {
+                        if (!task.isSuccessful())
+                        {
+                            Log.d( "test","Task was not succesful" );
+                        }
+                        else
+                        {
+                            Log.d("test", "The token is "+task.getResult());
+                        }
+                    }
+                } );
+        */
     }
 
     public void registerActivity(android.view.View v) { //  Takes the user to the registration page

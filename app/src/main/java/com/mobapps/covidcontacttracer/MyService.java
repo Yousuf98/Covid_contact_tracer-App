@@ -1,6 +1,5 @@
 package com.mobapps.covidcontacttracer;
 
-import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -21,14 +20,10 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
-import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -43,7 +38,6 @@ public class MyService extends Service implements GoogleApiClient.ConnectionCall
     public static final int UPDATE_INTERVAL = 20000;   // 5 secs
     public static final int FASTEST_UPDATE_INTERVAL = 10000;
     private LocationRequest locationRequest;
-
     private Timer timer;
     public static final String CHANNEL_ID = "ForegroundServiceChannel";
 
@@ -180,12 +174,23 @@ public class MyService extends Service implements GoogleApiClient.ConnectionCall
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onLocationChanged(@NonNull Location location) {
+
+        //Get user Status
+        String status;
+        if (ProfileActivity.isPositive){status = "Positive";}
+        else{status = "Negative";}
+
         Log.d("TS", "" + location.getLatitude() + "|" + location.getLongitude());
         generateNotification("" + location.getLatitude() + "|" + location.getLongitude());
         Map<String, String> data = new HashMap<>();
         data.put("Lattitude",location.getLatitude()+"");
         data.put("Longitude",location.getLongitude()+"");
-        db.collection("LocationStamps").document(auth.getCurrentUser().getUid()).collection("UserLocations").add(data);
+        data.put("Uid", auth.getCurrentUser().getUid());
+        data.put("timeStamp", System.currentTimeMillis()+"");
+        data.put("Status", status);
+        Log.d("TS", data.toString());
+        db.collection("LocationStamps").add(data);
+        //db.collection("LocationStamps").document(auth.getCurrentUser().getUid()).collection("UserLocations").add(data);
     }
 
     @Override

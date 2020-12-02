@@ -27,6 +27,8 @@ import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -83,6 +85,27 @@ public class RegisterUser extends AppCompatActivity implements RadioGroup.OnChec
 
         //Setting Radio Button Listener:
         StatusRadioGroup.setOnCheckedChangeListener(this);
+
+        //--remove the code
+        getDatabaseRecordsStatus();
+    }
+
+    //remove the code
+    public void getDatabaseRecordsStatus()
+    {
+        db.collection("users").get()
+                .addOnCompleteListener( new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if(task.isSuccessful())
+                        {
+                            for(QueryDocumentSnapshot document:task.getResult())
+                            {
+                                Log.d("database", "The status is" +document.get( "Status" ));
+                            }
+                        }
+                    }
+                } );
     }
 
     public void registerUser(android.view.View v) {
