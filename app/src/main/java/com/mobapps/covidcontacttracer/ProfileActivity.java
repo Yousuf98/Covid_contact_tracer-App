@@ -2,10 +2,12 @@ package com.mobapps.covidcontacttracer;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,13 +15,12 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 /*
@@ -31,10 +32,10 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     private TextView WelcomeText;
     private TextView statusTextView;
     private Button updateStatusButton;
-    private String ExtractedStatus;
-    private boolean PositiveOrNegative; // Stores whether the user is +ve or -ve in Boolean Format
+    public static boolean isPositive; // Stores whether the user is +ve or -ve in Boolean Format
     private FirebaseAuth auth;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private boolean isFirstRun = true;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -46,6 +47,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         if (user != null) {
             // User is signed in
             String name = user.getDisplayName();
+
             WelcomeText.setText("Welcome, "+name);
         } else {
             WelcomeText.setText("Some error took Place!");
@@ -56,9 +58,9 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         updateStatusButton=findViewById( R.id.updateStatusButton );
         updateStatusButton.setOnClickListener( this );
         CheckAndUpdateStatus();
-        UpdateUi();
-
     }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -77,6 +79,8 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                 startActivity(intent);
                 Intent serviceIntent = new Intent(getApplicationContext(), MyService.class);
                 stopService(serviceIntent);
+                Intent serviceIntent2 = new Intent(getApplicationContext(), ContactTracingService.class);
+                stopService(serviceIntent2);
                 break;
             case R.id.view_map:
                 intent=new Intent(getApplicationContext(),MapsActivity.class);
@@ -91,68 +95,66 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         {
             case R.id.updateStatusButton:
 
-                if(PositiveOrNegative)
+                if(isPositive)
                 {
-                    FirebaseDatabase.getInstance().getReference("Users").child(auth.getCurrentUser().getUid()).child( "Status" )
-                            .setValue( "Negative" );
                     Toast.makeText( this, "Status Updated to : Negative", Toast.LENGTH_SHORT ).show();
-
-                    //Code to update user status on firestore
                     db.collection("users").document(auth.getCurrentUser().getUid()).update("Status","Negative");
+
                 }
                 else
                 {
-                    FirebaseDatabase.getInstance().getReference("Users").child(auth.getCurrentUser().getUid()).child( "Status" )
-                            .setValue( "Positive" );
-                    Toast.makeText( this, "Status Updated to : Positive", Toast.LENGTH_SHORT ).show();
 
-                    //Code to update user status on firestore
+                    Toast.makeText( this, "Status Updated to : Positive", Toast.LENGTH_SHORT ).show();
                     db.collection("users").document(auth.getCurrentUser().getUid()).update("Status","Positive");
+
                 }
                 CheckAndUpdateStatus();
-                UpdateUi();
         }
     }
 
     private void CheckAndUpdateStatus() {
-        DatabaseReference ref=FirebaseDatabase.getInstance().getReference("Users").child( auth.getCurrentUser().getUid()).child("Status");
-        ref.addListenerForSingleValueEvent( new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                ExtractedStatus=(String)dataSnapshot.getValue();
-                if(ExtractedStatus.equals("Positive"))
-                {
-                    Toast.makeText( ProfileActivity.this, "POSITIVE CHECKED!", Toast.LENGTH_SHORT ).show();
-                    PositiveOrNegative=true;
-                }
-                else
-                {
-                    Toast.makeText( ProfileActivity.this, "NEGATIVE CHECKED!", Toast.LENGTH_SHORT ).show();
-                    PositiveOrNegative=false;
-                }
-            }
+        db.collection("users").document(auth.getCurrentUser().getUid()).get()
+                .addOnCompleteListener( new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful())
+                        {
+                            DocumentSnapshot document = task.getResult();
+                            if (document.exists()){
+                                Log.d("YS", (String) document.get("Status"));
+                                String status = (String) document.get("Status");
+                                if (status.equals("Negative")){
+                                    isPositive = false;
+                                }
+                                else {
+                                    isPositive = true;
+                                }
+                                UpdateUi();
+                                if (isFirstRun){
+                                    Intent serviceIntent = new Intent(ProfileActivity.this, MyService.class);
+                                    ContextCompat.startForegroundService(ProfileActivity.this, serviceIntent);
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                    // No Code.
-            }
-        } );
-
-
-
+                                    Intent serviceIntent2 = new Intent(ProfileActivity.this, ContactTracingService.class);
+                                    ContextCompat.startForegroundService(ProfileActivity.this, serviceIntent2);
+                                    isFirstRun = false;
+                                }
+                            }
+                        }
+                    }
+                } );
     }
 
     private void UpdateUi()
     {
-        if(PositiveOrNegative)
-        {
-            updateStatusButton.setText( "UPDATE STATUS TO POSITIVE" );
-            statusTextView.setText( "NEGATIVE" );
-        }
-        else
+        if(isPositive)
         {
             updateStatusButton.setText( "UPDATE STATUS TO NEGATIVE" );
             statusTextView.setText( "POSITIVE" );
+        }
+        else
+        {
+            updateStatusButton.setText( "UPDATE STATUS TO POSITIVE" );
+            statusTextView.setText( "NEGATIVE" );
         }
     }
 }

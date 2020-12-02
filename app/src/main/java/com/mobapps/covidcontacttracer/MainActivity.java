@@ -36,8 +36,9 @@ public class MainActivity extends AppCompatActivity {
         // Checking if the user is already logged in
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
-            Intent serviceIntent = new Intent(this, MyService.class);
-            ContextCompat.startForegroundService(this, serviceIntent);
+            /*
+            Intent serviceIntent = new Intent(getApplicationContext(), MyService.class);
+            ContextCompat.startForegroundService(getApplicationContext(), serviceIntent);*/
             Intent i = new Intent(getApplicationContext(), ProfileActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(i);
@@ -96,8 +97,9 @@ public class MainActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
                     //Redirect to user profile
+                    /*
                     Intent serviceIntent = new Intent(getApplicationContext(), MyService.class);
-                    ContextCompat.startForegroundService(getApplicationContext(), serviceIntent);
+                    ContextCompat.startForegroundService(getApplicationContext(), serviceIntent);*/
                     startActivity(new Intent(MainActivity.this, ProfileActivity.class));
                     progressBarLogin.setVisibility(View.GONE);
                     finish();
