@@ -2,6 +2,7 @@ package com.mobapps.covidcontacttracer;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -34,6 +35,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     public static boolean isPositive; // Stores whether the user is +ve or -ve in Boolean Format
     private FirebaseAuth auth;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private boolean isFirstRun = true;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -58,6 +60,8 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         CheckAndUpdateStatus();
     }
 
+
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate( R.menu.menu,menu );
@@ -75,6 +79,8 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                 startActivity(intent);
                 Intent serviceIntent = new Intent(getApplicationContext(), MyService.class);
                 stopService(serviceIntent);
+                Intent serviceIntent2 = new Intent(getApplicationContext(), ContactTracingService.class);
+                stopService(serviceIntent2);
                 break;
             case R.id.view_map:
                 intent=new Intent(getApplicationContext(),MapsActivity.class);
@@ -91,19 +97,18 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 
                 if(isPositive)
                 {
-                    Toast.makeText( this, "Status Updated to : Positive", Toast.LENGTH_SHORT ).show();
+                    Toast.makeText( this, "Status Updated to : Negative", Toast.LENGTH_SHORT ).show();
                     db.collection("users").document(auth.getCurrentUser().getUid()).update("Status","Negative");
 
                 }
                 else
                 {
 
-                    Toast.makeText( this, "Status Updated to : Negative", Toast.LENGTH_SHORT ).show();
+                    Toast.makeText( this, "Status Updated to : Positive", Toast.LENGTH_SHORT ).show();
                     db.collection("users").document(auth.getCurrentUser().getUid()).update("Status","Positive");
 
                 }
                 CheckAndUpdateStatus();
-
         }
     }
 
@@ -124,8 +129,15 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                                 else {
                                     isPositive = true;
                                 }
-
                                 UpdateUi();
+                                if (isFirstRun){
+                                    Intent serviceIntent = new Intent(ProfileActivity.this, MyService.class);
+                                    ContextCompat.startForegroundService(ProfileActivity.this, serviceIntent);
+
+                                    Intent serviceIntent2 = new Intent(ProfileActivity.this, ContactTracingService.class);
+                                    ContextCompat.startForegroundService(ProfileActivity.this, serviceIntent2);
+                                    isFirstRun = false;
+                                }
                             }
                         }
                     }
