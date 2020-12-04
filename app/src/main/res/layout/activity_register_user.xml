@@ -5,6 +5,7 @@
     android:id="@+id/ConstraintLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/app_bg"
     android:visibility="visible"
     tools:context=".RegisterUser">
 
@@ -158,6 +159,7 @@
 
             <Button
                 android:id="@+id/buttonReg"
+                style="@style/Widget.AppCompat.Button.Colored"
                 android:layout_width="220dp"
                 android:layout_height="45dp"
                 android:layout_marginStart="88dp"
@@ -166,7 +168,7 @@
                 android:ems="10"
                 android:onClick="registerUser"
                 android:text="@string/RegBtn"
-                android:textColor="#040404"
+                android:textColor="#F1FCFF"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"

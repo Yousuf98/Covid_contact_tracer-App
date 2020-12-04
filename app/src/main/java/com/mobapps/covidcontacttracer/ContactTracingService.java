@@ -171,7 +171,7 @@ public class ContactTracingService extends Service {
             db.collection("DistanceBetweenPoints").add(distance);
         }
         db.collection( "LocationStamps" ).document(current.get("Current_ID")).update( "AlreadyRead",true );
-        Toast.makeText( ContactTracingService.this, "ID is "+current.get("Current_ID"), Toast.LENGTH_SHORT ).show();
+        //Toast.makeText( ContactTracingService.this, "ID is "+current.get("Current_ID"), Toast.LENGTH_SHORT ).show();
 
     }
 

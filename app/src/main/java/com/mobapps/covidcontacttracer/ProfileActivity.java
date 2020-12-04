@@ -1,10 +1,15 @@
 package com.mobapps.covidcontacttracer;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.DialogFragment;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,6 +42,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     private FirebaseAuth auth;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private boolean isFirstRun = true;
+    private ProgressBar progressBar;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -57,6 +64,11 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         statusTextView=findViewById( R.id.statusTextView );
         updateStatusButton=findViewById( R.id.updateStatusButton );
         updateStatusButton.setOnClickListener( this );
+
+        progressBar = findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.VISIBLE);
+        statusTextView.setVisibility(View.GONE);
+        updateStatusButton.setVisibility(View.GONE);
         CheckAndUpdateStatus();
     }
 
@@ -89,26 +101,52 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         return super.onOptionsItemSelected( item );
     }
 
+    public void confirmDialog(View view){
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle("Confirm status update");
+        alertDialogBuilder.setMessage("Are you sure you want to update your status?");
+                alertDialogBuilder.setPositiveButton("Yes",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface arg0, int arg1) {
+                                if(isPositive)
+                                {
+                                    Toast.makeText( ProfileActivity.this, "Status Updated to : Negative", Toast.LENGTH_SHORT ).show();
+                                    db.collection("users").document(auth.getCurrentUser().getUid()).update("Status","Negative");
+
+                                }
+                                else
+                                {
+
+                                    Toast.makeText( ProfileActivity.this, "Status Updated to : Positive", Toast.LENGTH_SHORT ).show();
+                                    db.collection("users").document(auth.getCurrentUser().getUid()).update("Status","Positive");
+
+                                }
+                                progressBar.setVisibility(View.VISIBLE);
+                                statusTextView.setVisibility(View.GONE);
+                                updateStatusButton.setVisibility(View.GONE);
+                                CheckAndUpdateStatus();
+                            }
+                        });
+
+        alertDialogBuilder.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //Do nothing
+            }
+        });
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
+
     @Override
     public void onClick(View view) {
         switch(view.getId())
         {
             case R.id.updateStatusButton:
+                confirmDialog(view);
 
-                if(isPositive)
-                {
-                    Toast.makeText( this, "Status Updated to : Negative", Toast.LENGTH_SHORT ).show();
-                    db.collection("users").document(auth.getCurrentUser().getUid()).update("Status","Negative");
-
-                }
-                else
-                {
-
-                    Toast.makeText( this, "Status Updated to : Positive", Toast.LENGTH_SHORT ).show();
-                    db.collection("users").document(auth.getCurrentUser().getUid()).update("Status","Positive");
-
-                }
-                CheckAndUpdateStatus();
         }
     }
 
@@ -129,6 +167,9 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                                 else {
                                     isPositive = true;
                                 }
+                                progressBar.setVisibility(View.GONE);
+                                statusTextView.setVisibility(View.VISIBLE);
+                                updateStatusButton.setVisibility(View.VISIBLE);
                                 UpdateUi();
                                 if (isFirstRun){
                                     Intent serviceIntent = new Intent(ProfileActivity.this, MyService.class);
@@ -153,11 +194,14 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         {
             updateStatusButton.setText( "UPDATE STATUS TO NEGATIVE" );
             statusTextView.setText( "POSITIVE" );
+            statusTextView.setTextColor((getResources().getColor(R.color.negativeGreen)));
         }
         else
         {
             updateStatusButton.setText( "UPDATE STATUS TO POSITIVE" );
             statusTextView.setText( "NEGATIVE" );
+            statusTextView.setTextColor((getResources().getColor(R.color.positiveRed)));
         }
     }
+
 }
