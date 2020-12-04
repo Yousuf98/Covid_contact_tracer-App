@@ -24,8 +24,12 @@ import androidx.core.app.NotificationCompat;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -42,6 +46,7 @@ public class MyService extends Service implements GoogleApiClient.ConnectionCall
     public static final String CHANNEL_ID = "ForegroundServiceChannel";
 
     private FirebaseAuth auth;
+    public static String me = "";
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @Override
@@ -58,6 +63,7 @@ public class MyService extends Service implements GoogleApiClient.ConnectionCall
                 .setInterval(UPDATE_INTERVAL)
                 .setFastestInterval(FASTEST_UPDATE_INTERVAL);
         googleApiClient.connect();
+
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -71,11 +77,13 @@ public class MyService extends Service implements GoogleApiClient.ConnectionCall
         //<uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
         //
         auth=FirebaseAuth.getInstance();
-        generateNotification("");
+        me = auth.getCurrentUser().getUid();
+        //generateNotification("");
 
         //TS: when the system will try to re-create the service
         //onStartCommand will be called again (not onCreate)
         //So called the startTimer() here
+        generateNotification("Loaction data being uploaded");
         startTimer();
 
         return START_STICKY;
@@ -90,7 +98,7 @@ public class MyService extends Service implements GoogleApiClient.ConnectionCall
 
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Contact Tracer Running")
-                .setContentText("Contact tracer is acquiring your GPS location" + "\n" + s)
+                .setContentText("Alert! "+ s)
                 .setSmallIcon(R.drawable.ic_launcher_background)
                 .setContentIntent(pendingIntent)
                 .build();
@@ -120,8 +128,26 @@ public class MyService extends Service implements GoogleApiClient.ConnectionCall
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void run() {
-                Log.d("CMP354", "Timer task is running: " + new Date(System.currentTimeMillis()));
-                //generateNotification(new Date(System.currentTimeMillis())+"");
+                Log.d("CMP354", "Timer task is running (Checking if I am on message list): " + new Date(System.currentTimeMillis()));
+                final String me = auth.getCurrentUser().getUid();
+                db.collection("Message List")
+                        .get()
+                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                if (task.isSuccessful()) {
+                                    for (QueryDocumentSnapshot document : task.getResult()) {
+                                        Log.d("TAG", document.getId() + " => " + document.getData());
+                                        if (document.get("UserID").equals(me)){
+                                            generateNotification("You may have been exposed to covid virus. Please get tested!");
+                                        }
+
+                                    }
+                                } else {
+                                    Log.d("TAG", "Error getting documents: ", task.getException());
+                                }
+                            }
+                        });
             }
         };
 
@@ -181,7 +207,7 @@ public class MyService extends Service implements GoogleApiClient.ConnectionCall
         else{status = "Negative";}
 
         Log.d("TS", "" + location.getLatitude() + "|" + location.getLongitude());
-        generateNotification("" + location.getLatitude() + "|" + location.getLongitude());
+        //generateNotification("" + location.getLatitude() + "|" + location.getLongitude());
 
         boolean HasBeenRead=false;
         Map<String, Object> data = new HashMap<>();

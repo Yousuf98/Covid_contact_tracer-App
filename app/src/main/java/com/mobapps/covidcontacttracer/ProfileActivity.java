@@ -140,6 +140,9 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                                 }
                             }
                         }
+                        else{
+                            Log.d("YS", "User signed out");
+                        }
                     }
                 } );
     }

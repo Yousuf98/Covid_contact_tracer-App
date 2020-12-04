@@ -48,7 +48,7 @@ public class ContactTracingService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         auth=FirebaseAuth.getInstance();
-
+        sendNotification("Contact tracing service running");
         startTimer();
 
         return START_STICKY;
@@ -111,7 +111,7 @@ public class ContactTracingService extends Service {
                                 }
                             }
                         });
-                sendNotification("Test notification");
+
             }
         };
         timer = new Timer(true);
@@ -170,7 +170,6 @@ public class ContactTracingService extends Service {
            // distance.put("Days Between", Double.parseDouble(String.valueOf(DaysDifference)));
             db.collection("DistanceBetweenPoints").add(distance);
         }
-
         db.collection( "LocationStamps" ).document(current.get("Current_ID")).update( "AlreadyRead",true );
         Toast.makeText( ContactTracingService.this, "ID is "+current.get("Current_ID"), Toast.LENGTH_SHORT ).show();
 
