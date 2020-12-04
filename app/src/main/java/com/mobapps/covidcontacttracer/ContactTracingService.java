@@ -21,6 +21,7 @@ package com.mobapps.covidcontacttracer;
         import com.google.firebase.firestore.FirebaseFirestore;
         import com.google.firebase.firestore.QueryDocumentSnapshot;
         import com.google.firebase.firestore.QuerySnapshot;
+        import com.google.firebase.firestore.SetOptions;
 
         import java.util.ArrayList;
         import java.util.Date;
@@ -162,7 +163,11 @@ public class ContactTracingService extends Service {
         {
             if(!checkUID.contains(check.get("CheckUserID"))) {
                 MessageList.put( "UserID", check.get( "CheckUserID" ) );
-                db.collection( "Message List" ).document( check.get( "CheckUserID" ) ).set( MessageList );
+                MessageList.put("Latitude", check.get("Lattitude"));
+                MessageList.put("Longitude", check.get("Longitude"));
+                Toast.makeText(getApplicationContext(),MessageList.toString(),Toast.LENGTH_LONG).show();
+                Log.d("CON",MessageList.toString());
+                db.collection( "Message List" ).document( check.get( "CheckUserID" ) ).set( MessageList, SetOptions.merge());
                 checkUID.add(check.get("CheckUserID"));
             }
             distance.put("Distance In Meters", dist)    ;
@@ -180,7 +185,7 @@ public class ContactTracingService extends Service {
         // create the intent for the notification
 
 
-        Intent notificationIntent = new Intent(this, MapsActivity.class)
+        Intent notificationIntent = new Intent(this, MainActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
 

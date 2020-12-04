@@ -92,13 +92,18 @@ public class MyService extends Service implements GoogleApiClient.ConnectionCall
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void generateNotification(String s) {
         createNotificationChannel();
-        Intent notificationIntent = new Intent(this, MainActivity.class);
+        Intent notificationIntent;
+        if (s.equalsIgnoreCase("Loaction data being uploaded")){
+            notificationIntent = new Intent(this, MainActivity.class);
+        } else {
+            notificationIntent = new Intent(this, MapsActivity.class);
+        }
         PendingIntent pendingIntent = PendingIntent.getActivity(this,
                 0, notificationIntent, 0);
 
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Contact Tracer Running")
-                .setContentText("Alert! "+ s)
+                .setContentText(s)
                 .setSmallIcon(R.drawable.app_bg)
                 .setContentIntent(pendingIntent)
                 .build();
@@ -138,8 +143,8 @@ public class MyService extends Service implements GoogleApiClient.ConnectionCall
                                 if (task.isSuccessful()) {
                                     for (QueryDocumentSnapshot document : task.getResult()) {
                                         Log.d("TAG", document.getId() + " => " + document.getData());
-                                        if (document.get("UserID").equals(me)){
-                                            generateNotification("You may have been exposed to covid virus. Please get tested!");
+                                        if (document.get("UserID").equals(me) && !ProfileActivity.isPositive){
+                                            generateNotification("Alert! You may have been exposed to covid virus. Please get tested!");
                                         }
 
                                     }

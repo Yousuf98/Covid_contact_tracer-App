@@ -15,6 +15,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -26,15 +29,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private GoogleMap mMap;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private FirebaseAuth auth;
     public static List<Object> listOfUsersDisplayed;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        auth=FirebaseAuth.getInstance();
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        Log.d("MAP","OnCreate");
     }
 
     /**
@@ -50,33 +58,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public void getMarkerCoordinates()
     {
-            db.collection("LocationStamps").whereEqualTo( "Status","Positive" )
-            .get().addOnCompleteListener( new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if(task.isSuccessful())
-                {
-                    for(QueryDocumentSnapshot document:task.getResult())
-                    {
-                        Log.d("CHECK", "The ID Encountered is "+document.get("Uid"));
-                        if(!listOfUsersDisplayed.contains( (String)document.get("Uid")))
-                        {
 
-                            LatLng newSet=new LatLng( Double.parseDouble( (String)document.get("Lattitude") ), Double.parseDouble( (String)document.get("Lattitude") ) );
-                            Toast.makeText( MapsActivity.this, "The UID is "+document.get("Uid"), Toast.LENGTH_SHORT ).show();
-                            mMap.addMarker(new MarkerOptions()
-                                    .position(newSet)
-                                    .title("Positive Profile"));
-                            listOfUsersDisplayed.add(document.get("Uid"));
-                        }
+        DocumentReference docRef = db.collection("Message List").document(auth.getCurrentUser().getUid());
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        Log.d("MAP", "DocumentSnapshot data: " + document.getData());
+                    } else {
+                        Log.d("MAP", "No such document");
                     }
-                }
-                else
-                {
-                    Toast.makeText( MapsActivity.this, "Error extracting coordinates!", Toast.LENGTH_SHORT ).show();
+                } else {
+                    Log.d("MAP", "get failed with ", task.getException());
                 }
             }
-        } );
+        });
 
     }
 
@@ -84,12 +82,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        Log.d("MAP","onMapReady");
         mMap = googleMap;
 
         // Setting the zoom controls for the user
         mMap.getUiSettings().setZoomControlsEnabled( true );
 
-        listOfUsersDisplayed=new ArrayList<>();
         getMarkerCoordinates();
 
 
