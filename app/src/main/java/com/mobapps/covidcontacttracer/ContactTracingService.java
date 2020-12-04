@@ -167,10 +167,10 @@ public class ContactTracingService extends Service {
                 MessageList.put("Longitude", check.get("Longitude"));
                 Toast.makeText(getApplicationContext(),MessageList.toString(),Toast.LENGTH_LONG).show();
                 Log.d("CON",MessageList.toString());
-                db.collection( "Message List" ).document( check.get( "CheckUserID" ) ).set( MessageList, SetOptions.merge());
+                db.collection( "Message List" ).document( check.get( "CheckUserID" ) ).set( MessageList);
                 checkUID.add(check.get("CheckUserID"));
             }
-            distance.put("Distance In Meters", dist)    ;
+            distance.put("Distance In Meters", dist);
             distance.put("Difference in Time in Hours",DifferenceInTime);
            // distance.put("Days Between", Double.parseDouble(String.valueOf(DaysDifference)));
             db.collection("DistanceBetweenPoints").add(distance);

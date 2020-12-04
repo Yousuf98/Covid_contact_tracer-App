@@ -67,6 +67,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
                         Log.d("MAP", "DocumentSnapshot data: " + document.getData());
+                        Double lat = Double.parseDouble(document.get("Latitude").toString());
+                        Double lon = Double.parseDouble(document.get("Longitude").toString());
+                        LatLng marker = new LatLng(lat,lon);
+                        mMap.addMarker(new MarkerOptions().position(marker).title("Exposure detected in this location"));
+                        mMap.moveCamera(CameraUpdateFactory.newLatLng(marker));
                     } else {
                         Log.d("MAP", "No such document");
                     }
