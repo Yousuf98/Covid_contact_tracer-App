@@ -81,26 +81,44 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         switch(item.getItemId())
         {
             case R.id.sign_out:
-                FirebaseAuth.getInstance().signOut();
-                Toast.makeText( this, "User signed out successfully!", Toast.LENGTH_SHORT ).show();
-                Intent intent=new Intent(getApplicationContext(),MainActivity.class);
-                startActivity(intent);
-                Intent serviceIntent = new Intent(getApplicationContext(), GPSService.class);
-                stopService(serviceIntent);
-                Intent serviceIntent2 = new Intent(getApplicationContext(), ContactTracingService.class);
-                stopService(serviceIntent2);
-                break;
-            case R.id.view_map:
-                intent=new Intent(getApplicationContext(),MapsActivity.class);
-                startActivity(intent);
+
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+                alertDialogBuilder.setTitle("Confirm Sign Out");
+                alertDialogBuilder.setMessage("Are you sure you want to sign out?");
+                alertDialogBuilder.setPositiveButton("Yes",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface arg0, int arg1) {
+                                FirebaseAuth.getInstance().signOut();
+                                Toast.makeText( ProfileActivity.this, "User signed out successfully!", Toast.LENGTH_SHORT ).show();
+                                Intent intent=new Intent(getApplicationContext(),MainActivity.class);
+                                startActivity(intent);
+                                Intent serviceIntent = new Intent(getApplicationContext(), GPSService.class);
+                                stopService(serviceIntent);
+                                Intent serviceIntent2 = new Intent(getApplicationContext(), ContactTracingService.class);
+                                stopService(serviceIntent2);
+                            }
+                        });
+
+                alertDialogBuilder.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //Do nothing
+                    }
+                });
+
+                AlertDialog alertDialog = alertDialogBuilder.create();
+                alertDialog.show();
+
+
         }
         return super.onOptionsItemSelected( item );
     }
 
-    public void confirmDialog(View view){
+    public void confirmDialog(View view, String t, String s){
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-        alertDialogBuilder.setTitle("Confirm status update");
-        alertDialogBuilder.setMessage("Are you sure you want to update your status?");
+        alertDialogBuilder.setTitle(t);
+        alertDialogBuilder.setMessage(s);
                 alertDialogBuilder.setPositiveButton("Yes",
                         new DialogInterface.OnClickListener() {
                             @Override
@@ -141,7 +159,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         switch(view.getId())
         {
             case R.id.updateStatusButton:
-                confirmDialog(view);
+                confirmDialog(view, "Confirm status update", "Are you sure you want to update your status?");
 
         }
     }
