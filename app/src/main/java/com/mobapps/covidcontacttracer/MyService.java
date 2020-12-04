@@ -99,7 +99,7 @@ public class MyService extends Service implements GoogleApiClient.ConnectionCall
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Contact Tracer Running")
                 .setContentText("Alert! "+ s)
-                .setSmallIcon(R.drawable.ic_launcher_background)
+                .setSmallIcon(R.drawable.app_bg)
                 .setContentIntent(pendingIntent)
                 .build();
 

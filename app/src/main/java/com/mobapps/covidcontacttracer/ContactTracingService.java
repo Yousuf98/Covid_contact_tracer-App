@@ -178,7 +178,9 @@ public class ContactTracingService extends Service {
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void sendNotification(String s) {
         // create the intent for the notification
-        Intent notificationIntent = new Intent(this, MainActivity.class)
+
+
+        Intent notificationIntent = new Intent(this, MapsActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
 
@@ -188,7 +190,7 @@ public class ContactTracingService extends Service {
                 PendingIntent.getActivity(this, 0, notificationIntent, flags);
 
         // create the variables for the notification
-        int icon = R.drawable.ic_launcher_background;
+        int icon = R.drawable.app_bg;
         CharSequence tickerText = "Look into the distance!";
         CharSequence contentTitle = getText(R.string.app_name);
         CharSequence contentText = s;

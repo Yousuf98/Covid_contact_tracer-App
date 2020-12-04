@@ -151,41 +151,49 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void CheckAndUpdateStatus() {
-        db.collection("users").document(auth.getCurrentUser().getUid()).get()
-                .addOnCompleteListener( new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if(task.isSuccessful())
-                        {
-                            DocumentSnapshot document = task.getResult();
-                            if (document.exists()){
-                                Log.d("YS", (String) document.get("Status"));
-                                String status = (String) document.get("Status");
-                                if (status.equals("Negative")){
-                                    isPositive = false;
-                                }
-                                else {
-                                    isPositive = true;
-                                }
-                                progressBar.setVisibility(View.GONE);
-                                statusTextView.setVisibility(View.VISIBLE);
-                                updateStatusButton.setVisibility(View.VISIBLE);
-                                UpdateUi();
-                                if (isFirstRun){
-                                    Intent serviceIntent = new Intent(ProfileActivity.this, MyService.class);
-                                    ContextCompat.startForegroundService(ProfileActivity.this, serviceIntent);
+        try {
+            db.collection("users").document(auth.getCurrentUser().getUid()).get()
+                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            if (task.isSuccessful()) {
+                                DocumentSnapshot document = task.getResult();
+                                if (document.exists()) {
+                                    Log.d("YS", (String) document.get("Status"));
+                                    String status = (String) document.get("Status");
+                                    if (status.equals("Negative")) {
+                                        isPositive = false;
+                                    } else {
+                                        isPositive = true;
+                                    }
+                                    progressBar.setVisibility(View.GONE);
+                                    statusTextView.setVisibility(View.VISIBLE);
+                                    updateStatusButton.setVisibility(View.VISIBLE);
+                                    UpdateUi();
+                                    if (isFirstRun) {
+                                        Intent serviceIntent = new Intent(ProfileActivity.this, MyService.class);
+                                        ContextCompat.startForegroundService(ProfileActivity.this, serviceIntent);
 
-                                    Intent serviceIntent2 = new Intent(ProfileActivity.this, ContactTracingService.class);
-                                    ContextCompat.startForegroundService(ProfileActivity.this, serviceIntent2);
-                                    isFirstRun = false;
+                                        Intent serviceIntent2 = new Intent(ProfileActivity.this, ContactTracingService.class);
+                                        ContextCompat.startForegroundService(ProfileActivity.this, serviceIntent2);
+                                        isFirstRun = false;
+                                    }
                                 }
+                            } else {
+                                //Log.d("YS", "User signed out");
                             }
                         }
-                        else{
-                            Log.d("YS", "User signed out");
-                        }
-                    }
-                } );
+                    });
+        } catch (NullPointerException e) {
+            //Catch the case when user is signed out
+            Log.d("YS", "User signed out");
+            Intent intent=new Intent(getApplicationContext(),MainActivity.class);
+            startActivity(intent);
+            Intent serviceIntent = new Intent(getApplicationContext(), MyService.class);
+            stopService(serviceIntent);
+            Intent serviceIntent2 = new Intent(getApplicationContext(), ContactTracingService.class);
+            stopService(serviceIntent2);
+        }
     }
 
     private void UpdateUi()
