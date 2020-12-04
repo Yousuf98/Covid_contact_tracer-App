@@ -182,12 +182,15 @@ public class MyService extends Service implements GoogleApiClient.ConnectionCall
 
         Log.d("TS", "" + location.getLatitude() + "|" + location.getLongitude());
         generateNotification("" + location.getLatitude() + "|" + location.getLongitude());
-        Map<String, String> data = new HashMap<>();
+
+        boolean HasBeenRead=false;
+        Map<String, Object> data = new HashMap<>();
         data.put("Lattitude",location.getLatitude()+"");
         data.put("Longitude",location.getLongitude()+"");
         data.put("Uid", auth.getCurrentUser().getUid());
         data.put("timeStamp", System.currentTimeMillis()+"");
         data.put("Status", status);
+        data.put("AlreadyRead",HasBeenRead);
         Log.d("TS", data.toString());
         db.collection("LocationStamps").add(data);
         //db.collection("LocationStamps").document(auth.getCurrentUser().getUid()).collection("UserLocations").add(data);
