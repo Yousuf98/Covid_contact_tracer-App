@@ -37,7 +37,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class MyService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+public class GPSService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private GoogleApiClient googleApiClient;
     public static final int UPDATE_INTERVAL = 20000;   // 5 secs
     public static final int FASTEST_UPDATE_INTERVAL = 10000;
@@ -83,7 +83,7 @@ public class MyService extends Service implements GoogleApiClient.ConnectionCall
         //TS: when the system will try to re-create the service
         //onStartCommand will be called again (not onCreate)
         //So called the startTimer() here
-        generateNotification("Loaction data being uploaded");
+        generateNotification("Location data being uploaded");
         startTimer();
 
         return START_STICKY;
@@ -93,7 +93,7 @@ public class MyService extends Service implements GoogleApiClient.ConnectionCall
     private void generateNotification(String s) {
         createNotificationChannel();
         Intent notificationIntent;
-        if (s.equalsIgnoreCase("Loaction data being uploaded")){
+        if (s.equalsIgnoreCase("Location data being uploaded")){
             notificationIntent = new Intent(this, MainActivity.class);
         } else {
             notificationIntent = new Intent(this, MapsActivity.class);

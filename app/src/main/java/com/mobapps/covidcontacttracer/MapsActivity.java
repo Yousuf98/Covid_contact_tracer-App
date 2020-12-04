@@ -1,8 +1,10 @@
 package com.mobapps.covidcontacttracer;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -14,6 +16,8 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
@@ -72,6 +76,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         LatLng marker = new LatLng(lat,lon);
                         mMap.addMarker(new MarkerOptions().position(marker).title("Exposure detected in this location"));
                         mMap.moveCamera(CameraUpdateFactory.newLatLng(marker));
+                        deleteFromMessageList();
                     } else {
                         Log.d("MAP", "No such document");
                     }
@@ -81,6 +86,31 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
+
+
+        //Restart GPSService
+        Intent serviceIntent = new Intent(getApplicationContext(), GPSService.class);
+        stopService(serviceIntent);
+        ContextCompat.startForegroundService(this, serviceIntent);
+
+    }
+
+    public void deleteFromMessageList(){
+        //Remove from message list
+        db.collection("Message List").document(auth.getCurrentUser().getUid())
+                .delete()
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d("MAP", "DocumentSnapshot successfully deleted!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w("MAP", "Error deleting document", e);
+                    }
+                });
     }
 
 

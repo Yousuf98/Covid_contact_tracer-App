@@ -1,14 +1,11 @@
 package com.mobapps.covidcontacttracer;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.DialogFragment;
 
 import android.annotation.SuppressLint;
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -25,7 +22,6 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -89,7 +85,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                 Toast.makeText( this, "User signed out successfully!", Toast.LENGTH_SHORT ).show();
                 Intent intent=new Intent(getApplicationContext(),MainActivity.class);
                 startActivity(intent);
-                Intent serviceIntent = new Intent(getApplicationContext(), MyService.class);
+                Intent serviceIntent = new Intent(getApplicationContext(), GPSService.class);
                 stopService(serviceIntent);
                 Intent serviceIntent2 = new Intent(getApplicationContext(), ContactTracingService.class);
                 stopService(serviceIntent2);
@@ -171,7 +167,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                                     updateStatusButton.setVisibility(View.VISIBLE);
                                     UpdateUi();
                                     if (isFirstRun) {
-                                        Intent serviceIntent = new Intent(ProfileActivity.this, MyService.class);
+                                        Intent serviceIntent = new Intent(ProfileActivity.this, GPSService.class);
                                         ContextCompat.startForegroundService(ProfileActivity.this, serviceIntent);
 
                                         Intent serviceIntent2 = new Intent(ProfileActivity.this, ContactTracingService.class);
@@ -189,7 +185,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             Log.d("YS", "User signed out");
             Intent intent=new Intent(getApplicationContext(),MainActivity.class);
             startActivity(intent);
-            Intent serviceIntent = new Intent(getApplicationContext(), MyService.class);
+            Intent serviceIntent = new Intent(getApplicationContext(), GPSService.class);
             stopService(serviceIntent);
             Intent serviceIntent2 = new Intent(getApplicationContext(), ContactTracingService.class);
             stopService(serviceIntent2);
